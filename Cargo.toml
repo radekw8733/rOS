@@ -1,8 +1,13 @@
 [package]
 name = "rOS"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
+authors = ["Radosław Wolański <radekw8733@gmail.com>"]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"
 
 [dependencies]
