@@ -12,6 +12,8 @@ mod bootboot;
 mod terminal;
 mod peripherals;
 mod subsystems;
+mod diagnostics;
+mod assembly_macros;
 
 #[cfg(target_arch = "aarch64")]
 global_asm!(include_str!("../platform/aarch64/rpi4/boot.s"));
@@ -28,6 +30,8 @@ pub extern "C" fn kmain() {
     SUBSYSTEMS.write().console.as_mut().unwrap().println("initializing systems");
 
     SUBSYSTEMS.write().console.as_mut().unwrap().println("boot complete...\n");
+
+    diagnostics::print_diagnostics();
 
     SUBSYSTEMS.write().console.as_mut().unwrap().print("Welcome to rOS v");
     SUBSYSTEMS.write().console.as_mut().unwrap().print(VERSION);

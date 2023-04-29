@@ -15,7 +15,7 @@ impl Subsystems {
         self.init_console();
     }
 
-    pub fn init_console(&mut self) {
+    fn init_console(&mut self) {
         let font = unsafe { (&_binary_font_psf_start as *const u64 as *const psf2_t).as_ref().unwrap() };
         self.console = Some(FramebufferConsole::new(font));
     }

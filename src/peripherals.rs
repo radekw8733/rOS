@@ -16,7 +16,7 @@ impl Peripherals {
         self.init_framebuffer();
     }
 
-    pub fn init_framebuffer(&mut self) {
+    fn init_framebuffer(&mut self) {
         if self.framebuffer.is_none() {
             let bootboot_info = unsafe { &*(BOOTBOOT_INFO as *const BOOTBOOT) };
 
