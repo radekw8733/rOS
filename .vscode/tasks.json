@@ -7,8 +7,13 @@
 			"problemMatcher": [
 				"$rustc"
 			],
-			"group": "build",
 			"label": "rust: cargo build"
+		},
+		{
+			"type": "shell",
+			"label": "Build and run QEMU",
+			"group": "build",
+			"command": "${workspaceFolder}/deploy/build.sh"
 		}
 	]
 }

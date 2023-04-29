@@ -7,11 +7,19 @@
   "target-c-int-width": "32",
   "os": "none",
   "executables": true,
-  "linker-flavor": "ld",
+  "linker-flavor": "ld.lld",
+  "linker": "rust-lld",
   "panic-strategy": "abort",
   "disable-redzone": true,
   "features": "-mmx,-sse,+soft-float",
+  "dynamic-linking": false,
+  "relocation-model": "pic",
+  "code-model": "kernel",
+  "exe-suffix": "",
+  "has-rpath": false,
+  "no-default-libraries": true,
+  "position-independent-executables": false,
   "pre-link-args": {
-    "ld": ["-Tlink.ld"]
+    "ld.lld": ["--script=platform/x86_64/bootboot/link.ld", "platform/x86_64/font.o"]
   }
 }

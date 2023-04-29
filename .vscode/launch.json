@@ -1,0 +1,28 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "gdb",
+            "request": "attach",
+            "name": "Attach to gdbserver",
+            "executable": "target/x86_64-unknown-none/debug/rOS",
+            "target": ":1234",
+            "remote": true,
+            "cwd": "${workspaceRoot}",
+            "valuesFormatting": "parseText"
+        },
+        
+        {
+            "type": "lldb",
+            "request": "custom",
+            "name": "Debug remotely with QEMU",
+            "targetCreateCommands": ["target create ${workspaceFolder}/target/x86_64-unknown-none/debug/rOS"],
+            "processCreateCommands": ["gdb-remote localhost:1234", "continue"],
+            "initCommands": ["settings set target.x86-disassembly-flavor intel"],
+            "sourceMap": {"src": "target/x86_64-unknown-none/debug/rOS"}
+        }
+    ]
+}

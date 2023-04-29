@@ -6,8 +6,13 @@ authors = ["Radosław Wolański <radekw8733@gmail.com>"]
 
 [profile.dev]
 panic = "abort"
+opt-level = 0
 
 [profile.release]
 panic = "abort"
 
+[build-dependencies]
+cc = "*"
+
 [dependencies]
+spin = "0.9.8"

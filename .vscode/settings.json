@@ -1,4 +1,11 @@
 {
     "rust-analyzer.check.allTargets": false,
-    "rust-analyzer.showUnlinkedFileNotification": false
+    "rust-analyzer.showUnlinkedFileNotification": false,
+    "lldb.dereferencePointers": true,
+    "lldb.consoleMode": "commands",
+    "files.associations": {
+        "multiboot.h": "c"
+    },
+    "lldb.showDisassembly": "auto",
+    "lldb.displayFormat": "auto"
 }
