@@ -1,4 +1,4 @@
-ENTRY(kmain)
+ENTRY(_start)
 
 mmio        = 0xfffffffff8000000;
 fb          = 0xfffffffffc000000;
