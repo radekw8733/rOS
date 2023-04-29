@@ -17,13 +17,19 @@ global_asm!(include_str!("../platform/aarch64/rpi4/boot.s"));
 #[cfg(target_arch = "aarch64")]
 use core::arch::global_asm;
 
+const VERSION: &'static str = env!("CARGO_PKG_VERSION");
+
 #[no_mangle]
 pub extern "C" fn kmain() {
     PERIPHERALS.write().init();
     SUBSYSTEMS.write().init();
     SUBSYSTEMS.write().console.as_mut().unwrap().println("initializing systems");
 
-    SUBSYSTEMS.write().console.as_mut().unwrap().println("boot complete...");
+    SUBSYSTEMS.write().console.as_mut().unwrap().println("boot complete...\n");
+
+    SUBSYSTEMS.write().console.as_mut().unwrap().print("Welcome to rOS v: ");
+    SUBSYSTEMS.write().console.as_mut().unwrap().print(VERSION);
+    SUBSYSTEMS.write().console.as_mut().unwrap().println("!");
 
     loop {}
 }
