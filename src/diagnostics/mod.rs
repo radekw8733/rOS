@@ -48,29 +48,23 @@ fn dump_page_tables() {
             level += 1;
             print_page(&level, &page.0, &page.address().as_u64(), page.flags().contains(PDPTFlags::PS));
 
-            if huge {
-                
-            }
-            else {
+            if !huge {
                 print_indent(&level);
                 SUBSYSTEMS.write().console.as_mut().unwrap().print("PDS: ");
                 let pds = unsafe { &*(page.address().as_usize() as *const PDPTTable) }.entries;
 
-                for page in pds[0..1].iter() {
+                for page in pds.iter() {
                     if page.is_present() {
                         let huge = page.flags().contains(PDFlags::PS);
                         level += 1;
                         print_page(&level, &page.0, &page.address().as_u64(), huge);
 
-                        if huge {
-                            
-                        }
-                        else {
+                        if !huge {
                             print_indent(&level);
                             SUBSYSTEMS.write().console.as_mut().unwrap().print("PTS: ");
                             let pts = unsafe { &*(page.address().as_usize() as *const PDTable) }.entries;
 
-                            for page in pts[0..1].iter() {
+                            for page in pts.iter() {
                                 if page.is_present() {
                                     level += 1;
                                     print_page(&level, &page.0, &page.address().as_u64(), false);

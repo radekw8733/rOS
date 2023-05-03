@@ -37,3 +37,30 @@ pub fn get_pd_addr() -> usize {
 
     addr
 }
+
+#[inline]
+pub fn io_in(src: u16) -> u8 {
+    let mut data: u8 = 0;
+
+    unsafe {
+        asm!(
+            "in al, dx",
+            in("dx") src,
+            out("al") data
+        )
+    }
+
+    data
+}
+
+#[inline]
+pub fn io_out(dest: u16, data: u8) {
+    unsafe {
+        asm!(
+            "out dx, al",
+            in("dx") dest,
+            in("al") data
+        )
+    }
+}
+

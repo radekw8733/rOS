@@ -1,5 +1,3 @@
-use numtoa::NumToA;
-
 use crate::{bootboot::{psf2_t, BOOTBOOT_FB}, peripherals::PERIPHERALS};
 
 use super::{Console, Color};
@@ -20,27 +18,6 @@ pub struct FramebufferConsole {
 }
 
 impl Console for FramebufferConsole {
-    fn print(&mut self, s: &str) {
-        for c in s.chars() {
-            self.print_char(c);
-        }
-    }
-
-    fn print_num(&mut self, n: &u64) {
-        let mut buffer = [0u8; 50];
-        self.print(n.numtoa_str(16, &mut buffer));
-    }
-
-    fn print_hex(&mut self, n: &u64) {
-        self.print("0x");
-        self.print_num(n);
-    }
-    
-    fn println(&mut self, s: &str) {
-        self.print(s);
-        self.print_char('\n');
-    }
-
     fn print_char(&mut self, c: char) {
         if c == '\n' {
             self.cursor_x = 0;

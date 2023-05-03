@@ -15,6 +15,7 @@ mod subsystems;
 mod diagnostics;
 mod assembly_macros;
 mod paging;
+mod serial;
 
 #[cfg(target_arch = "aarch64")]
 global_asm!(include_str!("../platform/aarch64/rpi4/boot.s"));
