@@ -4,7 +4,7 @@ mmio        = 0xfffffffff8000000;
 fb          = 0xfffffffffc000000;
 bootboot    = 0xffffffffffe00000;
 environment = 0xffffffffffe01000;
-initstack = 4096;
+initstack = 16384;
 
 KERNEL_OFFSET = 0xffffffffffe02000;
 

@@ -1,3 +1,5 @@
+#![allow(unused_assignments)]
+
 use core::arch::asm;
 
 // returns EBX, EDX, ECX
@@ -21,4 +23,17 @@ pub fn cpuid(op: u32) -> (u32, u32, u32) {
     }
 
     (ebx, edx, ecx)
+}
+
+pub fn get_pd_addr() -> usize {
+    let mut addr: usize = 0;
+
+    unsafe {
+        asm!(
+            "mov {0}, cr3",
+            out(reg) addr
+        )
+    }
+
+    addr
 }

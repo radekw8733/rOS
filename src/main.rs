@@ -14,6 +14,7 @@ mod peripherals;
 mod subsystems;
 mod diagnostics;
 mod assembly_macros;
+mod paging;
 
 #[cfg(target_arch = "aarch64")]
 global_asm!(include_str!("../platform/aarch64/rpi4/boot.s"));
@@ -27,13 +28,12 @@ const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 pub extern "C" fn kmain() {
     PERIPHERALS.write().init();
     SUBSYSTEMS.write().init();
-    SUBSYSTEMS.write().console.as_mut().unwrap().println("initializing systems");
 
     SUBSYSTEMS.write().console.as_mut().unwrap().println("boot complete...\n");
 
     diagnostics::print_diagnostics();
 
-    SUBSYSTEMS.write().console.as_mut().unwrap().print("Welcome to rOS v");
+    SUBSYSTEMS.write().console.as_mut().unwrap().print("\nWelcome to rOS v");
     SUBSYSTEMS.write().console.as_mut().unwrap().print(VERSION);
     SUBSYSTEMS.write().console.as_mut().unwrap().println("!");
 
@@ -48,7 +48,6 @@ pub extern "C" fn ap() {
 
 #[panic_handler]
 fn panic(p: &PanicInfo) -> ! {
-    // let panic_mess = p.payload().downcast_ref::<&str>().unwrap();
     let panic_mess = p.message().unwrap().as_str().unwrap();
     SUBSYSTEMS.write().console.as_mut().unwrap().print(panic_mess);
     loop {}

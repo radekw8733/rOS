@@ -1,3 +1,5 @@
+use numtoa::NumToA;
+
 use crate::{bootboot::{psf2_t, BOOTBOOT_FB}, peripherals::PERIPHERALS};
 
 use super::{Console, Color};
@@ -22,6 +24,16 @@ impl Console for FramebufferConsole {
         for c in s.chars() {
             self.print_char(c);
         }
+    }
+
+    fn print_num(&mut self, n: &u64) {
+        let mut buffer = [0u8; 50];
+        self.print(n.numtoa_str(16, &mut buffer));
+    }
+
+    fn print_hex(&mut self, n: &u64) {
+        self.print("0x");
+        self.print_num(n);
     }
     
     fn println(&mut self, s: &str) {
@@ -60,9 +72,7 @@ impl FramebufferConsole {
     pub fn new(font: &'static psf2_t) -> FramebufferConsole {
         FramebufferConsole { font, cursor_x: 0, cursor_y: 0, spacing: 0 }
     }
-
-
-
+    
     fn _write_pixel(&self, addr: usize, col: Color) {
         let ptr = addr as *mut u32;
         unsafe { *ptr = col as u32 };
