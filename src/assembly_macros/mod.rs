@@ -2,6 +2,8 @@
 
 use core::arch::asm;
 
+use x86::current::paging::VAddr;
+
 // returns EBX, EDX, ECX
 pub fn cpuid(op: u32) -> (u32, u32, u32) {
     let mut ebx: u32 = 0;
@@ -64,3 +66,13 @@ pub fn io_out(dest: u16, data: u8) {
     }
 }
 
+#[inline]
+pub fn enable_large_pages() {
+    unsafe {
+        asm!(
+            "mov rax, cr4",
+            "or rax, 1 << 4",
+            "mov cr4, rax"
+        )
+    }
+}

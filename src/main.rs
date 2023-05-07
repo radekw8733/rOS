@@ -14,7 +14,7 @@ mod peripherals;
 mod subsystems;
 mod diagnostics;
 mod assembly_macros;
-mod paging;
+mod memory;
 mod serial;
 
 #[cfg(target_arch = "aarch64")]
@@ -49,7 +49,7 @@ pub extern "C" fn ap() {
 
 #[panic_handler]
 fn panic(p: &PanicInfo) -> ! {
-    let panic_mess = p.message().unwrap().as_str().unwrap();
+    let panic_mess = p.payload().downcast_ref::<&str>().unwrap();
     SUBSYSTEMS.write().console.as_mut().unwrap().print(panic_mess);
     loop {}
 }
