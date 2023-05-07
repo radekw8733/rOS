@@ -7,7 +7,7 @@
 use core::{panic::{PanicInfo}, arch::global_asm};
 use peripherals::PERIPHERALS;
 use subsystems::SUBSYSTEMS;
-use terminal::Console;
+use terminal::CONSOLE;
 mod bootboot;
 mod terminal;
 mod peripherals;
@@ -30,13 +30,13 @@ pub extern "C" fn kmain() {
     PERIPHERALS.write().init();
     SUBSYSTEMS.write().init();
 
-    SUBSYSTEMS.write().console.as_mut().unwrap().println("boot complete...\n");
+    println!("boot complete...");
+    println!();
 
     diagnostics::print_diagnostics();
 
-    SUBSYSTEMS.write().console.as_mut().unwrap().print("\nWelcome to rOS v");
-    SUBSYSTEMS.write().console.as_mut().unwrap().print(VERSION);
-    SUBSYSTEMS.write().console.as_mut().unwrap().println("!");
+    println!();
+    println!("Welcome to rOS v{}!", VERSION);
 
     loop {}
 }
@@ -50,6 +50,7 @@ pub extern "C" fn ap() {
 #[panic_handler]
 fn panic(p: &PanicInfo) -> ! {
     let panic_mess = p.payload().downcast_ref::<&str>().unwrap();
-    SUBSYSTEMS.write().console.as_mut().unwrap().print(panic_mess);
+    unsafe { CONSOLE.force_unlock() };
+    print!("{}", panic_mess);
     loop {}
 }

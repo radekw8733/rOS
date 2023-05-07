@@ -1,6 +1,6 @@
 use crate::{bootboot::{psf2_t, BOOTBOOT_FB}, peripherals::PERIPHERALS};
 
-use super::{Console, Color};
+use super::{GenericConsole, Color};
 
 pub struct Framebuffer {
     pub fb_addr: usize,
@@ -17,7 +17,7 @@ pub struct FramebufferConsole {
     spacing: u32
 }
 
-impl Console for FramebufferConsole {
+impl GenericConsole for FramebufferConsole {
     fn print_char(&mut self, c: char) {
         if c == '\n' {
             self.cursor_x = 0;
