@@ -9,6 +9,7 @@ use crate::{terminal::fb::FramebufferConsole, bootboot::{_binary_font_psf_start,
 use self::serial::SerialConsole;
 pub mod fb;
 pub mod serial;
+pub mod shell;
 
 pub trait GenericConsole {
     fn print(&mut self, s: &str) {
@@ -33,7 +34,7 @@ pub trait GenericConsole {
 }
 
 pub struct Console {
-    fbcon: Option<FramebufferConsole>,
+    pub fbcon: Option<FramebufferConsole>,
     serialcon: Option<SerialConsole>,
 }
 
@@ -81,6 +82,7 @@ lazy_static! {
         serialcon: None
     });
 }
+
 pub enum Color {
     Red = 0xFF0000,
     Green = 0xFF00,

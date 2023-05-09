@@ -27,7 +27,7 @@ fn print_vendor_id() {
 fn dump_page_tables() {
     println!("- Page tables:");
     let kmem = SUBSYSTEMS.read();
-    let tables = &kmem.paging.as_ref().unwrap().kmem.as_ref().unwrap();
+    let tables = &kmem.paging.as_ref().unwrap().paging.kmem.as_ref().unwrap();
     for x in 0..8 {
         println!("  {:?}", tables.entries[x]);
     }

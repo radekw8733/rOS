@@ -2,7 +2,9 @@ use core::mem::size_of;
 
 use x86::{current::paging::{PML4Entry, PDPTEntry, PDEntry, PAGE_SIZE_ENTRIES, pml4_index, VAddr, PAddr, pdpt_index, pd_index, PDFlags, PDPTFlags, PML4Flags}, tlb::flush};
 
-use crate::assembly_macros::{get_pd_addr, enable_large_pages};
+use crate::{assembly_macros::{get_pd_addr, enable_large_pages}};
+
+use super::PagingInterface;
 
 const KERNEL_HEAP_PAGE: usize = 0xFFFFFF0000000000;
 const KERNEL_HEAP_PAGE_COUNT: usize = 10; // 2 MB * 10 = 20 MB
@@ -22,29 +24,31 @@ pub struct PDTable {
     pub entries: [PDEntry; PAGE_SIZE_ENTRIES]
 }
 
-pub struct Paging {
+pub struct X86Paging {
     pub tables: &'static mut RootTable,
     pub kmem: Option<&'static mut PDTable>
 }
 
-impl Paging {
-    pub fn new() -> Paging {
+impl PagingInterface for X86Paging {
+    fn new() -> X86Paging {
+        enable_large_pages();
         let root_page_addr = get_pd_addr();
         let tables = unsafe { &mut *(root_page_addr as *mut RootTable) };
 
-        Paging {
+        X86Paging {
             tables,
             kmem: None,
         }
     }
 
-    pub fn allocate_pages_for_kernel(&mut self) -> Result<&'static str, &'static str> {
-        enable_large_pages();
+    fn allocate_pages_for_kernel(&mut self) -> Result<&'static str, &'static str> {
         self.map(VAddr::from_usize(KERNEL_HEAP_PAGE), PAddr::from(0x200000));
 
         self.test_space()
     }
+}
 
+impl X86Paging {
     pub fn map(&mut self, virt: VAddr, phys: PAddr) {
         let pml4_index = pml4_index(virt);
         let pdpt_index = pdpt_index(virt);

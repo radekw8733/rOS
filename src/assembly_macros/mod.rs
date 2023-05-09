@@ -2,8 +2,6 @@
 
 use core::arch::asm;
 
-use x86::current::paging::VAddr;
-
 // returns EBX, EDX, ECX
 pub fn cpuid(op: u32) -> (u32, u32, u32) {
     let mut ebx: u32 = 0;
@@ -25,6 +23,12 @@ pub fn cpuid(op: u32) -> (u32, u32, u32) {
     }
 
     (ebx, edx, ecx)
+}
+
+pub fn halt() {
+    unsafe {
+        asm!("hlt")
+    }
 }
 
 pub fn get_pd_addr() -> usize {
@@ -64,6 +68,11 @@ pub fn io_out(dest: u16, data: u8) {
             in("al") data
         )
     }
+}
+
+#[inline]
+pub fn io_delay() {
+    io_out(0x80, 0)
 }
 
 #[inline]

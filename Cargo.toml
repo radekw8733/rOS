@@ -18,6 +18,10 @@ cc = "*"
 spin = "0.9.8"
 x86 = "*"
 numtoa = "*"
+pc-keyboard = "*"
 
 [dependencies.lazy_static]
 features = ["spin_no_std"]
+
+[dependencies.x86_64]
+features = ["abi_x86_interrupt"]

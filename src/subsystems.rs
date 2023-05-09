@@ -1,5 +1,5 @@
 use spin::RwLock;
-use crate::{terminal::{CONSOLE, ConsoleTypes}, memory::paging::x86::Paging, println};
+use crate::{terminal::{CONSOLE, ConsoleTypes}, memory::paging::{Paging, PagingInterface}, println};
  
 pub struct Subsystems {
     pub paging: Option<Paging>
@@ -17,7 +17,7 @@ impl Subsystems {
 
     fn init_console(&mut self) {
         CONSOLE.lock().init_console(ConsoleTypes::All);
-        println!("initializing...\n");
+        println!("initializing...");
     }
 
     fn init_paging(&mut self) {

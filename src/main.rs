@@ -1,13 +1,17 @@
 #![allow(non_snake_case)]
 #![feature(panic_info_message)]
 #![feature(ptr_internals)]
+#![feature(abi_x86_interrupt)]
 #![no_std]
 #![no_main]
 
-use core::{panic::{PanicInfo}, arch::global_asm};
+use core::{panic::{PanicInfo}, arch::{global_asm, asm}};
 use peripherals::PERIPHERALS;
 use subsystems::SUBSYSTEMS;
 use terminal::CONSOLE;
+use x86_64::instructions::interrupts::enable;
+
+use crate::{assembly_macros::halt, terminal::shell::Shell};
 mod bootboot;
 mod terminal;
 mod peripherals;
@@ -16,6 +20,9 @@ mod diagnostics;
 mod assembly_macros;
 mod memory;
 mod serial;
+mod interrupts;
+mod timer;
+mod keyboard;
 
 #[cfg(target_arch = "aarch64")]
 global_asm!(include_str!("../platform/aarch64/rpi4/boot.s"));
@@ -35,10 +42,22 @@ pub extern "C" fn kmain() {
 
     diagnostics::print_diagnostics();
 
-    println!();
-    println!("Welcome to rOS v{}!", VERSION);
+    // let's test division error handler
+    println!("testing IDT division handler...");
 
-    loop {}
+    // this loops
+    // unsafe { 
+    //     asm!(
+    //         "mov eax, 0",
+    //         "div eax"
+    //     );
+    // }
+    // this does not
+    unsafe { asm!("int 0"); }
+
+    enable();
+    Shell::main_loop();
+    halt();
 }
 
 // code to run on application processors
@@ -48,9 +67,8 @@ pub extern "C" fn ap() {
 }
 
 #[panic_handler]
-fn panic(p: &PanicInfo) -> ! {
-    let panic_mess = p.payload().downcast_ref::<&str>().unwrap();
+fn panic(panic_info: &PanicInfo) -> ! {
     unsafe { CONSOLE.force_unlock() };
-    print!("{}", panic_mess);
+    print!("{}", panic_info);
     loop {}
 }
