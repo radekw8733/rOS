@@ -18,10 +18,7 @@ impl Shell {
     pub fn main_loop() {
         println!();
         print!("Welcome to rOS v{}!", crate::VERSION);
-        for x in 0..40 {
-            Self::print_sign();
-            print!("asd {}", x);
-        }
+        Self::print_sign();
     }
 
     fn print_sign() {

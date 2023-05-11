@@ -43,30 +43,32 @@ impl VgaConsole {
                 *dst = src;
             }
         }
+        vram[VGA_HEIGHT as usize - 1].fill(Self::char_to_vga_entry(' ' as u16));
     }
 
     fn put_char(&mut self, c: u8) {
         if c == b'\n' {
             self.charpos_x = 0;
-            self.charpos_y += 1;
+            if self.charpos_y < VGA_HEIGHT - 1 {
+                self.charpos_y += 1;
+            }
+            else {
+                self.scroll();
+            }
         }
         else {
             let c = VgaConsole::char_to_vga_entry(c as u16);
+
+            if self.charpos_x >= VGA_WIDTH {
+                self.charpos_y += 1;
+                self.charpos_x = 1;
+            }
 
             let addr = VGA_BUFFER + ((self.charpos_y as u16 * VGA_WIDTH as u16 + self.charpos_x as u16) * 2) as usize;
             let ptr = addr as *mut u16;
             unsafe { *ptr = c };
 
             self.charpos_x += 1;
-        }
-
-        if self.charpos_x == VGA_WIDTH {
-            self.charpos_y += 1;
-            self.charpos_x = 1;
-        }
-        if self.charpos_y == VGA_HEIGHT {
-            self.scroll();
-            self.charpos_y -= 1;
         }
     }
     
