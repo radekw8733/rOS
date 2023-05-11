@@ -11,9 +11,8 @@ use super::PagingInterface;
 #[global_allocator]
 static KERNEL_HEAP_ALLOCATOR: LockedHeap = LockedHeap::empty();
 
-const KERNEL_HEAP_PAGE: usize = 0xFFFFFF0000000000;
+const KERNEL_HEAP_PAGE: usize = 0x0000010000000000;
 const KERNEL_HEAP_PAGE_COUNT: usize = 10; // 2 MB * 10 = 20 MB
-const KERNEL_PAGE_TABLE_ADDR: usize = 0x2000000;
 
 #[repr(align(4096))]
 pub struct RootTable {
@@ -47,7 +46,7 @@ impl PagingInterface for X86Paging {
     }
 
     fn allocate_pages_for_kernel(&mut self) -> Result<&'static str, &'static str> {
-        self.map(VAddr::from_usize(KERNEL_HEAP_PAGE), PAddr::from(0x200000));
+        // self.map(VAddr::from_usize(KERNEL_HEAP_PAGE), PAddr::from(0x200000));
         unsafe {
             KERNEL_HEAP_ALLOCATOR.lock().init(KERNEL_HEAP_PAGE as *mut u8, 2048 * KERNEL_HEAP_PAGE_COUNT)
         };
@@ -63,15 +62,16 @@ impl X86Paging {
 
         let pml4 = unsafe { &mut *(&mut self.tables.entries[pml4_index] as *mut PML4Entry) };
         if !pml4.is_present() {
-            *pml4 = PML4Entry::new(PAddr::from(KERNEL_PAGE_TABLE_ADDR), PML4Flags::P | PML4Flags::RW);
+            *pml4 = PML4Entry::new(PAddr::from(0xA00000), PML4Flags::P | PML4Flags::RW);
         }
 
-        let table = unsafe { &mut *(pml4.address().as_usize() as *mut PDPTTable) };
-        for x in &mut table.entries  {
-            x.0 = 0;
-        }
+        let pdpt_table = unsafe { &mut *(pml4.address().as_usize() as *mut PDPTTable) };
+        // for x in &mut table.entries  {
+        //     x.0 = 0;
+        // }
 
-        let pdpt = unsafe { &mut *((pml4.address().as_usize() + size_of::<u64>() * pdpt_index) as *mut PDPTEntry) };
+        // let pdpt = unsafe { &mut *((pml4.address().as_usize() + size_of::<u64>() * pdpt_index) as *mut PDPTEntry) };
+        let pdpt = &mut pdpt_table.entries[pdpt_index];
 
         let pds_addr = pml4.address().as_usize() + size_of::<PDPTEntry>() * 512 + (size_of::<u64>() * pd_index);
         *pdpt = PDPTEntry::new(

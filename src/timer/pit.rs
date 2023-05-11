@@ -14,10 +14,10 @@ impl PIT {
     }
 
     pub extern "x86-interrupt" fn interrupt_handler(_stack: InterruptStackFrame) {
-        unsafe { CONSOLE.force_unlock() };
-        interrupts::without_interrupts(|| {
-            print!(".");
-        });
+        // unsafe { CONSOLE.force_unlock() };
+        // interrupts::without_interrupts(|| {
+        //     print!(".");
+        // });
         PIC.lock().eoi(PIC_PIT_IRQ_LINE);
     }
 }

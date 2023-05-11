@@ -1,46 +1,72 @@
-use crate::terminal::Console;
+use super::GenericConsole;
 
-static mut VGA_BUFFER: *mut u16 = 0xB8000 as *mut u16;
-static mut vga_cursor_x: u8 = 0;
-static mut vga_cursor_y: u8 = 0;
+const VGA_BUFFER: usize = 0xB8000;
 
 const VGA_WIDTH: u8 = 80;
 const VGA_HEIGHT: u8 = 25;
 
-pub struct VgaConsole;
+pub struct VgaConsole {
+    charpos_x: u8,
+    charpos_y: u8,
+}
 
-impl Console for VgaConsole {
-    fn println(&mut self, s: &str) {
-        for c in s.chars() {
-            self.put_char(c as u8);
-        }
+impl GenericConsole for VgaConsole {
+    fn print_char(&mut self, c: char) {
+        self.put_char(c as u8);
     }
 }
+
 impl VgaConsole {
+    pub fn new() -> VgaConsole {
+        VgaConsole {
+            charpos_x: 0, 
+            charpos_y: 0
+        }
+    }
+
+    pub fn scroll(&mut self) {
+        self.scrolls(1);
+    }
+
+    pub fn scrolls(&mut self, n: usize) {
+        let vram = unsafe { &mut *(VGA_BUFFER as *mut [[u16; VGA_WIDTH as usize]; VGA_HEIGHT as usize]) };
+
+        for row_index in 0..n {
+            let row = &mut vram[row_index];
+            row.fill(Self::char_to_vga_entry(' ' as u16));
+        }
+
+        for y in n..VGA_HEIGHT as usize {
+            for x in 0..VGA_WIDTH as usize {
+                let src = vram[y][x];
+                let dst = &mut vram[y - n][x];
+                *dst = src;
+            }
+        }
+    }
+
     fn put_char(&mut self, c: u8) {
         if c == b'\n' {
-            unsafe {
-                vga_cursor_x = 0;
-                vga_cursor_y += 1;
-            }
+            self.charpos_x = 0;
+            self.charpos_y += 1;
         }
         else {
             let c = VgaConsole::char_to_vga_entry(c as u16);
-    
-            unsafe {
-                *VGA_BUFFER.offset((vga_cursor_y * VGA_WIDTH + vga_cursor_x) as isize) = c;
-            }
+
+            let addr = VGA_BUFFER + ((self.charpos_y as u16 * VGA_WIDTH as u16 + self.charpos_x as u16) * 2) as usize;
+            let ptr = addr as *mut u16;
+            unsafe { *ptr = c };
+
+            self.charpos_x += 1;
         }
 
-        unsafe {
-            vga_cursor_x += 1;
-
-            if vga_cursor_x == VGA_WIDTH {
-                vga_cursor_x = 0;
-                if vga_cursor_y == VGA_HEIGHT {
-                    vga_cursor_y = 0;
-                }
-            }
+        if self.charpos_x == VGA_WIDTH {
+            self.charpos_y += 1;
+            self.charpos_x = 1;
+        }
+        if self.charpos_y == VGA_HEIGHT {
+            self.scroll();
+            self.charpos_y -= 1;
         }
     }
     

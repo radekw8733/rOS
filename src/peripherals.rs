@@ -1,7 +1,7 @@
 use spin::RwLock;
 use x86_64::structures::{gdt::GlobalDescriptorTable, idt::InterruptDescriptorTable};
 
-use crate::{terminal::{fb::Framebuffer, shell::Shell}, bootboot::{BOOTBOOT_INFO, BOOTBOOT}, keyboard::ps2::PS2ControllerType, interrupts::{idt::IDT, pic::PIC}, timer::pit::PIT};
+use crate::{terminal::{shell::Shell}, bootboot::{BOOTBOOT_INFO, BOOTBOOT}, keyboard::ps2::PS2ControllerType, interrupts::{idt::IDT, pic::PIC}, timer::pit::PIT, graphics::framebuffer::Framebuffer};
 
 pub struct Peripherals {
     pub framebuffer: Option<Framebuffer>,
@@ -35,6 +35,7 @@ pub static PERIPHERALS: RwLock<Peripherals> = RwLock::new(Peripherals {
 impl Peripherals {
     pub fn init(&mut self) {
         // self.init_serial_port();
+        #[cfg(feature = "bootboot")]
         self.init_framebuffer();
         #[cfg(target_arch = "x86_64")] {
             // self.init_gdt();

@@ -26,17 +26,18 @@ mod serial;
 mod interrupts;
 mod timer;
 mod keyboard;
+mod graphics;
 
 #[cfg(target_arch = "aarch64")]
 global_asm!(include_str!("../platform/aarch64/rpi4/boot.s"));
-#[cfg(target_arch = "x86_64")]
+#[cfg(all(target_arch = "x86_64", feature = "bootboot"))]
 global_asm!(include_str!("../platform/x86_64/bootboot/bootstrap.s"));
 
 const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
 // boostrap processor entry
 #[no_mangle]
-pub extern "C" fn kmain() {
+pub extern "C" fn _start() {
     PERIPHERALS.write().init();
     SUBSYSTEMS.write().init();
 

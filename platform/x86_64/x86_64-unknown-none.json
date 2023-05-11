@@ -18,8 +18,5 @@
   "exe-suffix": "",
   "has-rpath": false,
   "no-default-libraries": true,
-  "position-independent-executables": false,
-  "pre-link-args": {
-    "ld.lld": ["--script=platform/x86_64/bootboot/link.ld", "platform/x86_64/font.o"]
-  }
+  "position-independent-executables": false
 }

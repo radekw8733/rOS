@@ -3,7 +3,7 @@ use crate::{assembly_macros, terminal::{CONSOLE, GenericConsole}, println, subsy
 pub fn print_diagnostics() {
     println!("Diagnostics result:");
     print_vendor_id();
-    dump_page_tables();
+    // dump_page_tables();
 }
 
 fn print_vendor_id() {
