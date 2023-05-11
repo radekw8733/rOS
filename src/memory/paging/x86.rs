@@ -1,10 +1,15 @@
 use core::mem::size_of;
 
+use alloc::boxed::Box;
+use linked_list_allocator::LockedHeap;
 use x86::{current::paging::{PML4Entry, PDPTEntry, PDEntry, PAGE_SIZE_ENTRIES, pml4_index, VAddr, PAddr, pdpt_index, pd_index, PDFlags, PDPTFlags, PML4Flags}, tlb::flush};
 
-use crate::{assembly_macros::{get_pd_addr, enable_large_pages}};
+use crate::{assembly_macros::{get_pd_addr, enable_large_pages}, bootboot::BOOTBOOT_FB};
 
 use super::PagingInterface;
+
+#[global_allocator]
+static KERNEL_HEAP_ALLOCATOR: LockedHeap = LockedHeap::empty();
 
 const KERNEL_HEAP_PAGE: usize = 0xFFFFFF0000000000;
 const KERNEL_HEAP_PAGE_COUNT: usize = 10; // 2 MB * 10 = 20 MB
@@ -43,7 +48,9 @@ impl PagingInterface for X86Paging {
 
     fn allocate_pages_for_kernel(&mut self) -> Result<&'static str, &'static str> {
         self.map(VAddr::from_usize(KERNEL_HEAP_PAGE), PAddr::from(0x200000));
-
+        unsafe {
+            KERNEL_HEAP_ALLOCATOR.lock().init(KERNEL_HEAP_PAGE as *mut u8, 2048 * KERNEL_HEAP_PAGE_COUNT)
+        };
         self.test_space()
     }
 }
@@ -86,10 +93,10 @@ impl X86Paging {
     }
 
     fn test_space(&mut self) -> Result<&'static str, &'static str> {
-        let test = 139;
-        let addr = KERNEL_HEAP_PAGE as *mut u64;
-        unsafe { *addr = test };
-        if test == unsafe { *addr } {
+        let mut test = Box::<u32>::new(49);
+        let test2 = Box::<u32>::new(139);
+        *test = *test2.as_ref();
+        if test == test2 {
             Ok("heap space test successful")
         }
         else {

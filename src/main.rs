@@ -5,6 +5,9 @@
 #![no_std]
 #![no_main]
 
+#[macro_use]
+extern crate alloc;
+
 use core::{panic::{PanicInfo}, arch::{global_asm, asm}};
 use peripherals::PERIPHERALS;
 use subsystems::SUBSYSTEMS;

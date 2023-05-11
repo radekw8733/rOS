@@ -17,12 +17,15 @@ static SHELL: Shell = Shell;
 impl Shell {
     pub fn main_loop() {
         println!();
-        println!("Welcome to rOS v{}!", crate::VERSION);
-        Self::print_sign();
+        print!("Welcome to rOS v{}!", crate::VERSION);
+        for x in 0..40 {
+            Self::print_sign();
+            print!("asd {}", x);
+        }
     }
 
     fn print_sign() {
-        print!("> ");
+        print!("\n> ");
     }
 
     pub fn pass_key(scan_code: u8) {
@@ -35,9 +38,11 @@ impl Shell {
                         print!("{:?}", key);
                     }
                     pc_keyboard::DecodedKey::Unicode(c) => {
-                        print!("{}", c);
                         if c == '\n' {
                             Self::print_sign();
+                        }
+                        else {
+                            print!("{}", c);
                         }
                     }
                 }

@@ -11,8 +11,8 @@ pub static SUBSYSTEMS: RwLock<Subsystems> = RwLock::new(Subsystems {
 
 impl Subsystems {
     pub fn init(&mut self) {
-        self.init_console();
         self.init_paging();
+        self.init_console();
     }
 
     fn init_console(&mut self) {
