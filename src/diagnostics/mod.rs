@@ -1,4 +1,4 @@
-use crate::{assembly_macros, terminal::{CONSOLE, GenericConsole}, println, subsystems::SUBSYSTEMS};
+use crate::{assembly_macros, terminal::{CONSOLE, GenericConsole}, println};
 
 pub fn print_diagnostics() {
     println!("Diagnostics result:");
@@ -24,11 +24,11 @@ fn print_vendor_id() {
     println!("");
 }
 
-fn dump_page_tables() {
-    println!("- Page tables:");
-    let kmem = SUBSYSTEMS.read();
-    let tables = &kmem.paging.as_ref().unwrap().paging.kmem.as_ref().unwrap();
-    for x in 0..8 {
-        println!("  {:?}", tables.entries[x]);
-    }
-}
+// fn dump_page_tables() {
+//     println!("- Page tables:");
+//     let kmem = SUBSYSTEMS.read();
+//     let tables = &kmem.paging.as_ref().unwrap().paging.kmem.as_ref().unwrap();
+//     for x in 0..8 {
+//         println!("  {:?}", tables.entries[x]);
+//     }
+// }

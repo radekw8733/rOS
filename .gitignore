@@ -1,3 +1,5 @@
 Cargo.lock
 /target
-deploy
+/build
+/image
+rOS.iso

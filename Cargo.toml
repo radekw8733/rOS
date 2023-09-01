@@ -4,11 +4,6 @@ version = "0.1.1"
 edition = "2021"
 authors = ["Radosław Wolański <radekw8733@gmail.com>"]
 
-[features]
-default = ["bootimage"]
-bootimage = []
-bootboot = []
-font_embed = []
 
 [profile.dev]
 panic = "abort"
@@ -18,7 +13,7 @@ opt-level = 0
 panic = "abort"
 
 [dependencies]
-bootloader = "0.9.23"
+limine = "0.1.11"
 spin = "0.9.8"
 x86 = "*"
 numtoa = "*"

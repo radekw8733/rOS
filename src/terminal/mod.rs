@@ -4,8 +4,6 @@ use lazy_static::lazy_static;
 use numtoa::NumToA;
 use spin::Mutex;
 
-use crate::{bootboot::{_binary_font_psf_start, psf2_t}};
-
 use self::{serial::SerialConsole, vga::VgaConsole};
 pub mod serial;
 pub mod vga;

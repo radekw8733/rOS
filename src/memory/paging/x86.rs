@@ -4,7 +4,7 @@ use alloc::boxed::Box;
 use linked_list_allocator::LockedHeap;
 use x86::{current::paging::{PML4Entry, PDPTEntry, PDEntry, PAGE_SIZE_ENTRIES, pml4_index, VAddr, PAddr, pdpt_index, pd_index, PDFlags, PDPTFlags, PML4Flags}, tlb::flush};
 
-use crate::{assembly_macros::{get_pd_addr, enable_large_pages}, bootboot::BOOTBOOT_FB};
+use crate::assembly_macros::{get_pd_addr, enable_large_pages};
 
 use super::PagingInterface;
 
