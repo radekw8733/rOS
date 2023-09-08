@@ -15,19 +15,17 @@ use lazy_static::lazy_static;
 use memory::MEMORY_MANAGER;
 use spin::Mutex;
 use tty::{fb::FramebufferConsole, Console};
-// use terminal::CONSOLE;
-use x86::gdt::load_gdt;
+use gdt::load_gdt;
 
-// mod diagnostics;
+mod assembly_macros;
+mod memory;
+mod graphics;
+mod gdt;
+mod tty;
 // mod serial;
 // mod interrupts;
 // mod timer;
 // mod keyboard;
-mod assembly_macros;
-mod memory;
-mod graphics;
-mod x86;
-mod tty;
 
 const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
