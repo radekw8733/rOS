@@ -1,12 +1,12 @@
 pub mod framebuffer;
 
 pub struct Size {
-    pub width: u64,
-    pub height: u64
+    pub width: u32,
+    pub height: u32
 }
 
 impl Size {
-    pub fn new(width: u64, height: u64) -> Self { Self { width, height } }
+    pub fn new(width: u32, height: u32) -> Self { Self { width, height } }
 }
 
 pub struct Point {
