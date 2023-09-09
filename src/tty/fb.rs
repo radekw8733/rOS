@@ -1,10 +1,22 @@
 use alloc::vec::Vec;
 use alloc::vec;
+use alloc::boxed::Box;
 use psf2::Font;
+use spin::Mutex;
+use lazy_static::lazy_static;
 
-use crate::graphics::{framebuffer::Framebuffer, Color, Point};
+use crate::graphics::{framebuffer::Framebuffer, Color, Point, Size};
 
 use super::Console;
+
+static FB_REQUEST: limine::FramebufferRequest = limine::FramebufferRequest::new(0);
+lazy_static! {
+    pub static ref CONSOLE: Mutex<Box<dyn Console + Send>> = Mutex::new(Box::new(FramebufferConsole::new({
+        let framebuffer_l = &FB_REQUEST.get_response().get().unwrap().framebuffers()[0];
+    
+        Framebuffer::new_limine(framebuffer_l)
+    })));
+}
 
 const FONT_DATA: &'static [u8] = include_bytes!("font.psf");
 
@@ -22,7 +34,7 @@ impl Console for FramebufferConsole {
         if c == '\n' {
             self.charpos_x = 0;
             
-            if self.charpos_y * self.font.height() < self.fb.height - self.font.height() {
+            if self.charpos_y * self.font.height() < self.fb.size.height - self.font.height() {
                 self.charpos_y += 1;
             }
             else {
@@ -30,7 +42,7 @@ impl Console for FramebufferConsole {
             }
         }
         else {
-            if self.charpos_x * self.font.width() >= self.fb.width {
+            if self.charpos_x * self.font.width() >= self.fb.size.width {
                 self.charpos_y += 1;
                 self.charpos_x = 2;
             }
@@ -51,8 +63,8 @@ impl core::fmt::Write for (dyn Console + Send + 'static) {
 impl FramebufferConsole {
     pub fn new(fb: Framebuffer) -> FramebufferConsole {
         let font = Font::new(FONT_DATA).unwrap();
-        let width = fb.width / font.width();
-        let height = fb.height / font.height();
+        let width = fb.size.width / font.width();
+        let height = fb.size.height / font.height();
         // let width = 101;
         // let height = 48;
         let array = vec![vec![b' '; width as usize]; height as usize];
