@@ -7,7 +7,7 @@
 
 extern crate alloc;
 
-use core::panic::PanicInfo;
+use core::{panic::PanicInfo, arch::asm};
 
 use assembly_macros::halt;
 use interrupts::load_interrupts;

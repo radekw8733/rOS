@@ -5,7 +5,7 @@ use psf2::Font;
 use spin::Mutex;
 use lazy_static::lazy_static;
 
-use crate::graphics::{framebuffer::Framebuffer, Color, Point, Size};
+use crate::graphics::{framebuffer::Framebuffer, Color, Point};
 
 use super::Console;
 

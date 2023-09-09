@@ -5,7 +5,7 @@ use crate::println;
 pub extern "x86-interrupt" fn double_fault_handler(stack: InterruptStackFrame, _zero: u64) -> ! {
     println!("\n-- DOUBLE FAULT EXCEPTION --");
     print_error(stack);
-    panic!();
+    panic!("double fault exception");
 }
 
 pub extern "x86-interrupt" fn division_error_handler(stack: InterruptStackFrame) {
