@@ -7,5 +7,6 @@
         "multiboot.h": "c"
     },
     "lldb.displayFormat": "auto",
-    "rust-analyzer.cargo.target": "x86_64-unknown-none"
+    "rust-analyzer.cargo.target": "x86_64-unknown-none",
+    "lldb.showDisassembly": "auto"
 }

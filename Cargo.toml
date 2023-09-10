@@ -13,9 +13,10 @@ opt-level = 0
 panic = "abort"
 
 [dependencies]
-x86_64 = { version = "*", features = ["abi_x86_interrupt"] }
+x86_64 = { version = "0.14.10", features = ["abi_x86_interrupt"] }
 limine = "0.1.11"
 spin = "0.9.8"
 lazy_static = { version = "1.4.0", features = ["spin_no_std"] }
+pci-ids = "0.2.5"
 buddy_system_allocator = "0.9.0"
 psf2 = { version = "0.4.0", default-features = false }

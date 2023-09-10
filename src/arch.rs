@@ -1,10 +1,9 @@
 #![allow(unused_assignments)]
-#![allow(dead_code)]
 
 use core::arch::asm;
 
 // returns EBX, EDX, ECX
-pub fn cpuid(op: u32) -> (u32, u32, u32) {
+pub fn _cpuid(op: u32) -> (u32, u32, u32) {
     let mut ebx: u32 = 0;
     let mut edx: u32 = 0;
     let mut ecx: u32 = 0;
@@ -32,19 +31,7 @@ pub fn halt() {
     }
 }
 
-pub fn get_pd_addr() -> usize {
-    let mut addr: usize = 0;
-
-    unsafe {
-        asm!(
-            "mov {0}, cr3",
-            out(reg) addr
-        )
-    }
-
-    addr
-}
-
+// Read 8bit value from IO port
 #[inline]
 pub fn io_in(src: u16) -> u8 {
     let mut data: u8 = 0;
@@ -60,6 +47,7 @@ pub fn io_in(src: u16) -> u8 {
     data
 }
 
+// Write 8bit value to IO port
 #[inline]
 pub fn io_out(dest: u16, data: u8) {
     unsafe {
@@ -71,18 +59,35 @@ pub fn io_out(dest: u16, data: u8) {
     }
 }
 
+// Read 32bit value from IO port
 #[inline]
-pub fn io_delay() {
-    io_out(0x80, 0)
+pub fn io_inl(src: u16) -> u32 {
+    let mut data: u32 = 0;
+
+    unsafe {
+        asm!(
+            "in eax, dx",
+            in("dx") src,
+            out("eax") data
+        )
+    }
+
+    data
+}
+
+// Write 32bit value to IO port
+#[inline]
+pub fn io_outl(dest: u16, data: u32) {
+    unsafe {
+        asm!(
+            "out dx, eax",
+            in("dx") dest,
+            in("eax") data
+        )
+    }
 }
 
 #[inline]
-pub fn enable_large_pages() {
-    unsafe {
-        asm!(
-            "mov rax, cr4",
-            "or rax, 1 << 4",
-            "mov cr4, rax"
-        )
-    }
+pub fn io_delay() {
+    io_out(0x80, 0)
 }

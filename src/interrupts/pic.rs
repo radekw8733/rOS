@@ -2,7 +2,7 @@
 #![allow(unused_assignments)]
 use spin::Mutex;
 
-use crate::assembly_macros::{io_out, io_in, io_delay};
+use crate::arch::{io_out, io_in, io_delay};
 
 const PIC1: u16 = 0x20;
 const PIC2: u16 = 0xA0;

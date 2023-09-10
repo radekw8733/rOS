@@ -13,6 +13,6 @@ lazy_static! {
     });
 }
 
-pub fn load_gdt() {
+pub fn _load_gdt() {
     unsafe { GDT.read().load_unsafe() }
 }
