@@ -19,41 +19,6 @@ lazy_static! {
         let mmap_response = MEMORYMAP_REQUEST.get_response().get().unwrap();
         let mmap = unsafe { from_raw_parts(mmap_response.entries.as_ptr(), mmap_response.entry_count as usize) };
 
-        // // find few frames to allocate FrameAllocator's BTrees
-        // const N_INITIAL_FRAMES: usize = 16;
-        // let mut initial_frames = [(0, 0); N_INITIAL_FRAMES];
-        // for frame_i in 0..N_INITIAL_FRAMES {
-        //     let frame = get_usable_frames(mmap).nth(frame_i).unwrap();
-        //     initial_frames[frame_i] = physframe_to_address_range(frame);
-        //     unsafe {
-        //         KERNEL_HEAP.lock().add_to_heap(initial_frames[frame_i].0, initial_frames[frame_i].1);
-        //     }
-        // }
-
-        // // this call requires heap to be ready
-        // let mut frame_allocator = FrameAllocator::<36>::new();
-        // // mark previously allocated single frame as used
-        // for frame_i in 0..N_INITIAL_FRAMES {
-        //     frame_allocator.add_frame(initial_frames[frame_i].0, initial_frames[frame_i].1);
-        // }
-        // frame_allocator.alloc(N_INITIAL_FRAMES);
-
-        // // add rest of usable frames provided by Limine
-        // for frame_range in get_usable_frame_ranges(&mmap) {
-        //     frame_allocator.add_frame(frame_range.start as usize, frame_range.end as usize);
-        // }
-
-        // // n frames by 4KB
-        // let n_frames = 32;
-        // for frame_i in 0..n_frames {
-        //     let frame = frame_allocator.alloc(frame_i);
-        //     if let Some(frame) = frame {
-        //         unsafe {
-        //             KERNEL_HEAP.lock().add_to_heap(frame, (frame + n_frames) - 1);
-        //         }
-        //     }
-        // }
-
         // find few frames to allocate FrameAllocator's BTrees
         const N_INITIAL_FRAMES: usize = 16;
         let mut initial_frames = [(0, 0); N_INITIAL_FRAMES];
@@ -111,35 +76,6 @@ impl<'a> MemoryManager<'a> {
     }
 }
 
-/// Very basic frame allocator intended for initializing temporary heap space
-// pub struct BumpStyleFrameAllocator {
-//     memory_map: &'static [NonNullPtr<MemmapEntry>],
-//     next_to_add: usize,
-//     next_to_return: usize
-// }
-
-// impl BumpStyleFrameAllocator {
-//     pub fn new(memory_map: &MemmapResponse) -> Self {
-//         BumpStyleFrameAllocator {
-//             memory_map: unsafe { from_raw_parts(memory_map.entries.as_ptr(), memory_map.entry_count as usize) },
-//             next_to_add: 0,
-//             next_to_return: 0
-//         }
-//     }
-
-//     fn allocate_frame(&mut self) -> Option<PhysFrame<Size4KiB>> {
-//         let frame = get_usable_frames(&self.memory_map).nth(self.next_to_add);
-//         self.next_to_add += 1;
-//         frame
-//     }
-
-//     fn return_allocated_frame(&mut self) -> Option<PhysFrame<Size4KiB>> {
-//         let frame = get_usable_frames(&self.memory_map).nth(self.next_to_return);
-//         self.next_to_return += 1;
-//         frame
-//     }
-// }
-
 /// Gathers and returns available memory frames basing on Limine memory map response
 fn get_usable_frames(mmap: &'static [NonNullPtr<MemmapEntry>]) -> impl Iterator<Item = PhysFrame> {
     let usable_frames = mmap.iter().filter(|r| {
@@ -172,22 +108,3 @@ fn physframe_to_address_range(frame: PhysFrame) -> (usize, usize) {
         (frame.start_address().as_u64() + frame.size()) as usize
     )
 }
-
-// pub fn init_memory() {
-//     let mmap_response = MEMORYMAP_REQUEST.get_response().get().unwrap();
-//     let mmap = unsafe { from_raw_parts(mmap_response.entries.as_ptr(), mmap_response.entry_count as usize) };
-
-//     // count available memory
-//     let mut total_mem = 0;
-//     for frame in mmap {
-//         if frame.typ == MemoryMapEntryType::Usable {
-//             total_mem += frame.len;
-//         }
-//     }
-
-//     let n_frames = total_mem / 1024 / 1024;
-//     for n_frame in get_usable_frames(mmap) {
-
-//     }
-//     KERNEL_HEAP.lock().add_to_heap(start, end)
-// }

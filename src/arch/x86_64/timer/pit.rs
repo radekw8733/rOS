@@ -1,7 +1,8 @@
 use spin::Mutex;
 use x86_64::structures::idt::InterruptStackFrame;
 
-use crate::interrupts::pic::{PICInterrupt, PIC};
+use crate::arch::x86_64::irq::pic::{PICInterrupt, PIC};
+
 
 pub static _PIT: Mutex<PITType> = Mutex::new(PITType);
 

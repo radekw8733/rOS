@@ -1,6 +1,4 @@
-use pci_ids::Device;
-
-use crate::arch::{io_outl, io_inl};
+use crate::arch::x86_64::asm::{io_outl, io_inl};
 
 pub struct PCIDeviceSelector {
     bus: u8,

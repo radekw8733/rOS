@@ -19,7 +19,7 @@ pub trait Console {
 
 #[macro_export]
 macro_rules! print {
-    ($($arg:tt)*) => ($crate::tty::_print(format_args!($($arg)*)));
+    ($($arg:tt)*) => ($crate::drivers::tty::_print(format_args!($($arg)*)));
 }
 
 #[macro_export]

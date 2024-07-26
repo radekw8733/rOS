@@ -1,11 +1,8 @@
-use self::{idt::load_idt, pic::{PIC, PICInterrupt}};
+use self::{idt::load_idt, pic::{PICInterrupt, PIC}};
 
-#[cfg(target_arch = "x86_64")]
-pub mod pic;
-#[cfg(target_arch = "x86_64")]
-pub mod idt;
-#[cfg(target_arch = "x86_64")]
 pub mod exceptions;
+pub mod idt;
+pub mod pic;
 
 pub fn load_interrupts() {
     load_idt();

@@ -1,6 +1,8 @@
 use spin::RwLock;
 use x86_64::structures::idt::InterruptDescriptorTable;
-use crate::timer::PITType;
+
+use crate::arch::x86_64::timer::pit::PITType;
+
 use super::{pic::PICInterrupt, exceptions::{double_fault_handler, division_error_handler}};
 
 pub static mut IDT: RwLock<InterruptDescriptorTable> = RwLock::new(InterruptDescriptorTable::new());

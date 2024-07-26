@@ -1,13 +1,12 @@
-#!/bin/bash
-
+#!/bin/sh
 
 mkdir -p build/kernel
 mkdir -p image/EFI/BOOT
-if [ "$1" == "--release" ]; then
-    cargo build --target x86_64-unknown-none --release
+if [ "$1" = "--release" ]; then
+    cargo build --target x86_64-unknown-none --features="x86_64" --release
     cp -v target/x86_64-unknown-none/release/rOS build/kernel/kernel.elf
 else
-    cargo build --target x86_64-unknown-none
+    cargo build --target x86_64-unknown-none --features="x86_64"
     cp -v target/x86_64-unknown-none/debug/rOS build/kernel/kernel.elf
 fi
 

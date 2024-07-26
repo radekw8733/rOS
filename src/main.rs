@@ -5,25 +5,18 @@
 
 extern crate alloc;
 
-use core::{panic::PanicInfo, iter::empty};
+use core::panic::PanicInfo;
 
 use alloc::vec::Vec;
-use arch::halt;
-use interrupts::load_interrupts;
+use arch::x86_64::asm::halt;
+use kernel::{irq::load_interrupts, mm::{MEMORY_MANAGER, MEMORYMAP_REQUEST}};
 use limine::MemoryMapEntryType;
-use memory::{MEMORY_MANAGER, MEMORYMAP_REQUEST};
 
-use crate::tty::fb::CONSOLE;
+use crate::drivers::tty::fb::CONSOLE;
 
 mod arch;
-mod memory;
-mod graphics;
-mod gdt;
-mod tty;
-mod io;
-// mod serial;
-mod interrupts;
-mod timer;
+mod drivers;
+mod kernel;
 
 const _VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
@@ -35,7 +28,7 @@ pub extern "C" fn _start() -> ! {
     MEMORY_MANAGER.lock().init();
     MEMORY_MANAGER.lock().print_heap_usage();
 
-    let empty_vec: Vec<u8> = Vec::with_capacity(2);
+    let _empty_vec: Vec<u8> = Vec::with_capacity(2);
     MEMORY_MANAGER.lock().print_heap_usage();
 
     load_interrupts();
