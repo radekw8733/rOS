@@ -1,3 +1,5 @@
+use alloc::vec::Vec;
+
 use crate::arch::x86_64::asm::{io_outl, io_inl};
 
 pub struct PCIDeviceSelector {
@@ -42,19 +44,19 @@ impl PCIDeviceID {
         }
     }
 
-    pub fn return_subclass_name(&self) -> &'static str {
-        match pci_ids::Subclass::from_cid_sid(self.cid, self.sid) {
-            Some(dev) => dev.name(),
-            None => ""
-        }
-    }
+    // pub fn return_subclass_name(&self) -> &'static str {
+    //     match pci_ids::Subclass::from_cid_sid(self.cid, self.sid) {
+    //         Some(dev) => dev.name(),
+    //         None => ""
+    //     }
+    // }
 
-    pub fn return_class_name(&self) -> &'static str {
-        match pci_ids::Subclass::from_cid_sid(self.cid, self.sid) {
-            Some(dev) => dev.class().name(),
-            None => ""
-        }
-    }
+    // pub fn return_class_name(&self) -> &'static str {
+    //     match pci_ids::Subclass::from_cid_sid(self.cid, self.sid) {
+    //         Some(dev) => dev.class().name(),
+    //         None => ""
+    //     }
+    // }
 }
 
 impl core::fmt::Debug for PCIDeviceID {
@@ -95,5 +97,28 @@ pub fn read_pci_device_id(dev: &PCIDeviceSelector) -> PCIDeviceID {
         pid: (register0 >> 16) as u16,
         cid: (register2 >> 24) as u8,
         sid: (register2 >> 16) as u8 & 0xFF
+    }
+}
+
+pub fn discover_pci_devices() -> Vec<PCIDeviceID> {
+    let mut devices = Vec::new();
+
+    for device_i in 0..255 {
+        for function_i in 0..8 {
+            let pci_device = PCIDeviceSelector::new(0, device_i, function_i);
+            if is_pci_device_present(&pci_device) {
+                let pci_dev_info = read_pci_device_id(&pci_device);
+                devices.push(pci_dev_info);
+            }
+        }
+    }
+
+    devices
+}
+
+pub fn print_pci_devices() {
+    log::debug!("probing available PCI devices");
+    for dev in discover_pci_devices() {
+        log::debug!("{:?}", dev);
     }
 }

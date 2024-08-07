@@ -25,12 +25,6 @@ pub fn _cpuid(op: u32) -> (u32, u32, u32) {
     (ebx, edx, ecx)
 }
 
-pub fn halt() {
-    unsafe {
-        asm!("hlt")
-    }
-}
-
 // Read 8bit value from IO port
 #[inline]
 pub fn io_in(src: u16) -> u8 {

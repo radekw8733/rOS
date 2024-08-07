@@ -1,126 +1,183 @@
 use alloc::vec::Vec;
-use alloc::vec;
-use alloc::boxed::Box;
+use alloc::{collections::VecDeque, string::ToString};
+use alloc::string::String;
 use psf2::Font;
-use spin::Mutex;
-use lazy_static::lazy_static;
 
-use crate::drivers::video::{framebuffer::Framebuffer, Color, Point};
-
-use super::Console;
-
-static FB_REQUEST: limine::FramebufferRequest = limine::FramebufferRequest::new(0);
-lazy_static! {
-    pub static ref CONSOLE: Mutex<Box<dyn Console + Send>> = Mutex::new(Box::new(FramebufferConsole::new({
-        let framebuffer_l = &FB_REQUEST.get_response().get().unwrap().framebuffers()[0];
-    
-        Framebuffer::new_limine(framebuffer_l)
-    })));
-}
+use crate::{drivers::video::{framebuffer::GenericFramebuffer, Color, Framebuffer, Pixel, Point, Size}, kernel::log::Console};
 
 const FONT_DATA: &'static [u8] = include_bytes!("font.psf");
 
 pub struct FramebufferConsole {
-    // char position in buffer
-    charpos_x: u32,
-    charpos_y: u32,
-    fb: Framebuffer,
+    fb: GenericFramebuffer,
     font: Font<&'static [u8]>,
-    char_buffer: Vec<Vec<u8>>
+    buf: VecDeque<String>,
+    current_foreground: Color,
+    current_background: Color,
+    is_in_escape_mode: bool,
+    current_escape_seq: String,
 }
 
 impl Console for FramebufferConsole {
     fn write(&mut self, c: char) {
-        if c == '\n' {
-            self.charpos_x = 0;
-            
-            if self.charpos_y * self.font.height() < self.fb.size.height - self.font.height() {
-                self.charpos_y += 1;
-            }
-            else {
-                self.scroll();
-            }
-        }
-        else {
-            if self.charpos_x * self.font.width() >= self.fb.size.width {
-                self.charpos_y += 1;
-                self.charpos_x = 2;
-            }
-            self.char_buffer[self.charpos_y as usize][self.charpos_x as usize] = c as u8;
-            self.render_char(c, self.charpos_x * self.font.width(), self.charpos_y * self.font.height());
-            self.charpos_x += 1;
-        }
+        self.add_to_buffer(c);
     }
-}
 
-impl core::fmt::Write for (dyn Console + Send + 'static) {
-    fn write_str(&mut self, s: &str) -> core::fmt::Result {
-        self.print(s);
-        Ok(())
+    fn write_str(&mut self, s: &str) {
+        for c in s.chars() {
+            self.add_to_buffer(c);
+        }
     }
 }
 
 impl FramebufferConsole {
-    pub fn new(fb: Framebuffer) -> FramebufferConsole {
+    pub fn new(fb: GenericFramebuffer) -> FramebufferConsole {
         let font = Font::new(FONT_DATA).unwrap();
-        let width = fb.size.width / font.width();
-        let height = fb.size.height / font.height();
-        // let width = 101;
-        // let height = 48;
-        let array = vec![vec![b' '; width as usize]; height as usize];
-        // let array = vec![vec![' '; 5]; 5];
+        let height = fb.size().height / font.height();
+
         FramebufferConsole {
-            charpos_x: 0,
-            charpos_y: 0,
             fb,
             font,
-            char_buffer: array
+            buf: VecDeque::with_capacity(height as usize),
+            current_foreground: Color { red: 255, green: 255, blue: 255 },
+            current_background: Color { red: 0, green: 0, blue: 0 },
+            is_in_escape_mode: false,
+            current_escape_seq: String::new(),
         }
     }
 
-    fn render_char(&mut self, c: char, pixel_x: u32, pixel_y: u32) {
-        self.render_char_u8(c as u8, pixel_x, pixel_y);
+    fn add_to_buffer(&mut self, c: char) {
+        match self.buf.len() {
+            0 => self.buf.push_back(String::new()),
+            len if len as u32 > self.fb.size().height / self.font.height() => { 
+                drop(self.buf.pop_front());
+                self.rerender();
+            },
+            _ => ()
+        }
+        if c == '\n' {
+            self.buf.push_back(String::new());
+        }
+        else {
+            self.buf.back_mut().unwrap().push(c);
+            self.rerender_line(self.buf.len() as u32 - 1);
+        }
     }
 
-    fn render_char_u8(&mut self, c: u8, pixel_x: u32, pixel_y: u32) {
-        let font_size = (self.font.width(), self.font.height());
-        let glyph = self.font.get_ascii(c).unwrap();
+    fn rerender(&mut self) {
+        self.fb.fill(Color { red: 0, green: 0, blue: 0 });
 
-        for (y, row) in glyph.enumerate() {
-            for glyph_row in row.data().iter() {
-                for x in 0..8 {
-                    let color = match glyph_row & (1 << x) {
-                        0 => Color::new(0, 0, 0),
-                        _ => Color::new(0, 255, 0)
-                    };
-                    let pixel = Point::new((font_size.0 - x as u32) + pixel_x, y as u32 + pixel_y);
-                    
-                    self.fb.write_pixel(pixel, color)
+        let buf = core::mem::replace(&mut self.buf, VecDeque::new());
+        for (y, line) in buf.iter().enumerate() {
+            let mut x = 0;
+            for c in line.chars() {
+                if self.parse_char(
+                    c,
+                    Point {
+                        x: x as u32 * self.font.width(),
+                        y: y as u32 * self.font.height(),
+                    }
+                ) {
+                    x += 1;
+                }
+            }
+        }
+        self.buf = buf;
+
+        self.fb.display();
+    }
+
+    fn rerender_line(&mut self, line: u32) {
+        self.fb.fill_rect(
+            Pixel {
+                color: Color { red: 0, green: 0, blue: 0 },
+                point: Point { x: 0, y: line * self.font.height() }
+            },
+            Size {
+                height: self.font.height(),
+                width: self.fb.size().width
+            }
+        );
+
+        let buf = core::mem::replace(&mut self.buf, VecDeque::new());
+        let mut x = 0;
+        for c in buf[line as usize].chars() {
+            if self.parse_char(
+                c,
+                Point {
+                    x: x as u32 * self.font.width(),
+                    y: line as u32 * self.font.height(),
+                }
+            ) {
+                x += 1;
+            }
+        }
+        self.buf = buf;
+
+        self.fb.display();
+    }
+
+    fn parse_char(&mut self, c: char, point: Point) -> bool {
+        match c {
+            '\u{001b}' => {
+                self.is_in_escape_mode = true;
+                self.current_escape_seq = c.to_string();
+                false
+            },
+            'm' => {
+                match self.is_in_escape_mode {
+                    true => {
+                        self.is_in_escape_mode = false;
+                        let mut params = self.current_escape_seq[2..].split(';');
+                        // TODO: needs safe value check
+                        match params.nth(0).unwrap() {
+                            "38" => {
+                                let colors: Vec<&str> = params.skip(1).collect();
+                                self.current_foreground = Color {
+                                    red: colors[0].parse().unwrap(),
+                                    green: colors[1].parse().unwrap(),
+                                    blue: colors[2].parse().unwrap()
+                                }
+                            },
+                            "48" => {
+                                let colors: Vec<&str> = params.skip(2).collect();
+                                self.current_background = Color {
+                                    red: colors[0].parse().unwrap(),
+                                    green: colors[1].parse().unwrap(),
+                                    blue: colors[2].parse().unwrap()
+                                }
+                            },
+                            _ => {}
+                        };
+                        false
+                    },
+                    false => { self.render_char(c, point); true }
+                }
+            }
+            _ => {
+                match self.is_in_escape_mode {
+                    true => { self.current_escape_seq.push(c); false },
+                    false => { self.render_char(c, point); true }
                 }
             }
         }
     }
 
-    pub fn scroll(&mut self) {
-        self.scrolls(1)
-    }
+    fn render_char(&mut self, c: char, point: Point) {
+        let font_size = (self.font.width(), self.font.height());
+        let glyph = self.font.get_ascii(c as u8).unwrap();
 
-    pub fn scrolls(&mut self, n: usize) {
-        // clear first n lines
-        for y in 0..n {
-            self.char_buffer[y].fill(b' ');
-        }
-        for y in n..self.char_buffer.len() {
-            for x in 0..self.char_buffer[y].len() {
-                self.char_buffer[y - n][x] = self.char_buffer[y][x];
-                self.char_buffer[y][x] = b' ';
-            }
-        }
-
-        for y in 0..self.char_buffer.len() {
-            for x in 0..self.char_buffer[y].len() {
-                self.render_char(' ', x as u32 * self.font.width(), y as u32 * self.font.height());
-                self.render_char_u8(self.char_buffer[y][x], x as u32 * self.font.width(), y as u32* self.font.height());
+        for (y, row) in glyph.enumerate() {
+            for glyph_row in row.data().iter() {
+                for x in 0..8 {
+                    let color = match glyph_row & (1 << x) {
+                        0 => self.current_background,
+                        _ => self.current_foreground
+                    };
+                    let point = Point::new((font_size.0 - x as u32) + point.x, y as u32 + point.y);
+                    let pixel = Pixel { color, point };
+                    
+                    self.fb.plot(pixel);
+                }
             }
         }
     }

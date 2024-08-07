@@ -4,7 +4,7 @@ pub mod exceptions;
 pub mod idt;
 pub mod pic;
 
-pub fn load_interrupts() {
+pub fn enable_interrupts() {
     load_idt();
 
     PIC.lock().init();

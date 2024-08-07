@@ -7,6 +7,8 @@ authors = ["Radosław Wolański <radekw8733@gmail.com>"]
 [features]
 x86_64 = ["dep:x86_64"]
 
+limine = []
+
 [profile.dev]
 panic = "abort"
 opt-level = 0
@@ -15,10 +17,13 @@ opt-level = 0
 panic = "abort"
 
 [dependencies]
-x86_64 = { version = "0.14.10", features = ["abi_x86_interrupt"], optional = true }
-limine = "0.1.11"
+x86_64 = { version = "0.15.1", features = ["abi_x86_interrupt"], optional = true }
+limine = "0.2.0"
 spin = "0.9.8"
-lazy_static = { version = "1.0.0", features = ["spin_no_std"] }
+humansize = "2.1.3"
 pci-ids = "0.2.5"
-buddy_system_allocator = "0.9.0"
+buddy_system_allocator = "0.10.0"
 psf2 = { version = "0.4.0", default-features = false }
+log = "0.4.22"
+ansi_rgb = "0.2.0"
+rgb = "0.8.45"

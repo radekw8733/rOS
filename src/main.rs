@@ -1,5 +1,8 @@
 #![allow(non_snake_case)]
 #![feature(abi_x86_interrupt)]
+#![feature(vec_into_raw_parts)]
+#![feature(slice_from_ptr_range)]
+#![feature(debug_closure_helpers)]
 #![no_std]
 #![no_main]
 
@@ -7,12 +10,10 @@ extern crate alloc;
 
 use core::panic::PanicInfo;
 
-use alloc::vec::Vec;
-use arch::x86_64::asm::halt;
-use kernel::{irq::load_interrupts, mm::{MEMORY_MANAGER, MEMORYMAP_REQUEST}};
-use limine::MemoryMapEntryType;
+use arch::ops::halt;
+use kernel::diagnostics::run_diagnostics;
 
-use crate::drivers::tty::fb::CONSOLE;
+use crate::kernel::{init, log::LOGGER};
 
 mod arch;
 mod drivers;
@@ -25,40 +26,15 @@ pub extern "C" fn _start() -> ! {
     // GDT needs work to do with Limine https://github.com/limine-bootloader/limine/blob/trunk/PROTOCOL.md#x86_64-1
     // load_gdt();
 
-    MEMORY_MANAGER.lock().init();
-    MEMORY_MANAGER.lock().print_heap_usage();
-
-    let _empty_vec: Vec<u8> = Vec::with_capacity(2);
-    MEMORY_MANAGER.lock().print_heap_usage();
-
-    load_interrupts();
-
-    // for device_i in 0..255 {
-    //     for function_i in 0..8 {
-    //         let pci_device = PCIDeviceSelector::new(0, device_i, function_i);
-    //         if is_pci_device_present(&pci_device) {
-    //             let pci_dev_info = read_pci_device_id(&pci_device);
-    //             println!("{:?}", pci_dev_info);
-    //         }
-    //     }
-    // }
-
-    let mmap = MEMORYMAP_REQUEST.get_response().get().unwrap();
-    let mmap = unsafe { core::slice::from_raw_parts(mmap.entries.as_ptr(), mmap.entry_count as usize) };
-    let usable_frames = mmap.iter().filter(|r| {
-        r.typ == MemoryMapEntryType::Usable || r.typ == MemoryMapEntryType::KernelAndModules
-    });
-    for frame in usable_frames {
-        println!("{:?}", frame);
-    }
-    
-    loop { halt() }
+    init::init();
+    run_diagnostics();
+    halt();
 }
 
 #[panic_handler]
 fn panic(panic_info: &PanicInfo) -> ! {
-    unsafe { CONSOLE.force_unlock() };
-    print!("\n{}", panic_info);
+    unsafe { LOGGER.force_unlock() };
+    log::error!(target: "KERNEL PANIC","{}", panic_info);
 
-    loop { halt() }
+    halt();
 }
