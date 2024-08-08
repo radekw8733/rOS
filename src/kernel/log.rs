@@ -9,7 +9,7 @@ pub static LOGGER: Mutex<Logger> = Mutex::new(Logger::new());
 
 pub struct Logger {
     early_mode: bool,
-    early_buffer: [char; 1000],
+    early_buffer: [char; 10000],
     early_counter: usize,
     consoles: Vec<Box<dyn Console + Send>>,
     buffer: Vec<String>,
@@ -19,7 +19,7 @@ impl Logger {
     pub const fn new() -> Self {
         Self {
             early_mode: true,
-            early_buffer: ['\0'; 1000],
+            early_buffer: ['\0'; 10000],
             early_counter: 0,
             consoles: Vec::new(),
             buffer: Vec::new(),

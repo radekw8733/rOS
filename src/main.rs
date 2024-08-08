@@ -12,6 +12,7 @@ use core::panic::PanicInfo;
 
 use arch::ops::halt;
 use kernel::diagnostics::run_diagnostics;
+use spin::RwLock;
 
 use crate::kernel::{init, log::LOGGER};
 
@@ -19,7 +20,12 @@ mod arch;
 mod drivers;
 mod kernel;
 
-const _VERSION: &'static str = env!("CARGO_PKG_VERSION");
+pub enum Mode {
+    Booting,
+    Booted
+}
+
+pub static MODE: RwLock<Mode> = RwLock::new(Mode::Booting);
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
@@ -28,6 +34,7 @@ pub extern "C" fn _start() -> ! {
 
     init::init();
     run_diagnostics();
+    *MODE.write() = Mode::Booted;
     halt();
 }
 

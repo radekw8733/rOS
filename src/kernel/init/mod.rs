@@ -1,4 +1,4 @@
-use crate::{kernel::irq::enable_interrupts, println};
+use crate::{kernel::irq::enable_interrupts, print, println};
 
 use super::log::LOGGER;
 
@@ -26,6 +26,6 @@ pub fn switch_logger() {
     #[cfg(feature = "limine")]
     limine::add_framebuffer_console();
 
-    println!("switching to dynamic logger");
+    print!("switching to dynamic logger");
     LOGGER.lock().switch_to_allocated_mode();
 }

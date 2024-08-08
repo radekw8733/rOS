@@ -3,7 +3,7 @@ use core::cmp::Ordering;
 #[cfg(feature = "limine")]
 use limine::memory_map::EntryType;
 
-pub mod manager;
+pub mod kheap;
 pub mod vm_manager;
 pub mod phys_allocator;
 

@@ -1,6 +1,11 @@
+use core::cell::OnceCell;
+
+use spin::Mutex;
 use x86_64::{structures::paging::{FrameAllocator, FrameDeallocator, PhysFrame, Size4KiB}, PhysAddr};
 
 use super::MemoryRegion;
+
+pub static PHYS_ALLOCATOR: Mutex<OnceCell<PhysicalMemoryAllocator>> = Mutex::new(OnceCell::new());
 
 pub struct PhysicalMemoryAllocator {
     pub allocator: buddy_system_allocator::FrameAllocator<36>,

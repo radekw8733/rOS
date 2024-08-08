@@ -27,3 +27,4 @@ psf2 = { version = "0.4.0", default-features = false }
 log = "0.4.22"
 ansi_rgb = "0.2.0"
 rgb = "0.8.45"
+interrupts = "0.1.5"

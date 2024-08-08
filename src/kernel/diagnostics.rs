@@ -1,14 +1,13 @@
-use crate::{drivers::io::pci::print_pci_devices, kernel::mm::manager::MEMORY_MANAGER};
+use crate::{drivers::io::pci::print_pci_devices, kernel::mm::phys_allocator::PHYS_ALLOCATOR};
 
 pub fn run_diagnostics() {
-    print_memory();
-    MEMORY_MANAGER.lock().get().unwrap().print_mmap_entries();
+    log_memory();
     // print_pci_devices();
 
     log::info!("booting rOS kernel complete");
 }
 
-fn print_memory() {
-    log::info!("available physical memory: {}", humansize::format_size(MEMORY_MANAGER.lock().get().unwrap().phys_memory_available(), humansize::DECIMAL));
-    log::info!("allocated physical memory: {}", humansize::format_size(MEMORY_MANAGER.lock().get().unwrap().phys_memory_allocated(), humansize::DECIMAL));
+fn log_memory() {
+    log::info!("available physical memory: {}", humansize::format_size(PHYS_ALLOCATOR.lock().get().unwrap().available_bytes(), humansize::DECIMAL));
+    log::info!("allocated physical memory: {}", humansize::format_size(PHYS_ALLOCATOR.lock().get().unwrap().allocated_bytes(), humansize::DECIMAL));
 }
