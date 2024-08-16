@@ -3,7 +3,7 @@ use buddy_system_allocator::FrameAllocator;
 use limine::{memory_map::{Entry, EntryType}, request::{FramebufferRequest, MemoryMapRequest}};
 use x86_64::{registers::control::Cr3, structures::paging::{OffsetPageTable, PageTable}, VirtAddr};
 
-use crate::{drivers::{tty::fb::FramebufferConsole, video::{framebuffer::GenericFramebuffer, Size}}, kernel::{log::{Console, LOGGER}, mm::{kheap::KERNEL_HEAP, phys_allocator::{PhysicalMemoryAllocator, PHYS_ALLOCATOR}, MMapEntry, MemoryRegion}}, println};
+use crate::{drivers::{tty::fb::FramebufferConsole, video::{framebuffer::GenericFramebuffer, Size}}, kernel::{log::{Console, LOGGER}, mm::{kheap::KERNEL_HEAP, phys_allocator::{PhysicalMemoryAllocator, PHYS_ALLOCATOR}, MMapEntry, MemoryRegion}}};
 
 static FB_REQUEST: FramebufferRequest = FramebufferRequest::new();
 static MEMORYMAP_REQUEST: MemoryMapRequest = MemoryMapRequest::new();
@@ -61,9 +61,9 @@ pub fn setup_memory() {
         })
         .collect::<Vec<MMapEntry>>();
 
-    for entry in mmap {
-        println!("{:x?}", entry);
-    }
+    // for entry in mmap {
+    //     println!("{:x?}", entry);
+    // }
 
     PHYS_ALLOCATOR.lock().set(frame_allocator).ok();
 }
@@ -77,7 +77,7 @@ fn get_usable_frame_iterator(mmap: &'static [&Entry]) -> impl Iterator<Item = Me
         .map(|f| {
             f.base..f.base+f.length
         })
-        .map(|a| {
+            .map(|a| {
             MemoryRegion { start: a.start as usize, end: a.end as usize}
         })
 }

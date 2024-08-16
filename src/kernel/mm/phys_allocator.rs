@@ -5,16 +5,16 @@ use x86_64::{structures::paging::{FrameAllocator, FrameDeallocator, PhysFrame, S
 
 use super::MemoryRegion;
 
-pub static PHYS_ALLOCATOR: Mutex<OnceCell<PhysicalMemoryAllocator>> = Mutex::new(OnceCell::new());
+pub static PHYS_ALLOCATOR: Mutex<OnceCell<PhysicalMemoryAllocator<36>>> = Mutex::new(OnceCell::new());
 
-pub struct PhysicalMemoryAllocator {
-    pub allocator: buddy_system_allocator::FrameAllocator<36>,
+pub struct PhysicalMemoryAllocator<const ORDER: usize> {
+    pub allocator: buddy_system_allocator::FrameAllocator<ORDER>,
     available: usize,
     allocated: usize,
 }
 
-impl PhysicalMemoryAllocator {
-    pub fn new(allocator: buddy_system_allocator::FrameAllocator<36>) -> Self {
+impl<const ORDER: usize> PhysicalMemoryAllocator<ORDER> {
+    pub fn new(allocator: buddy_system_allocator::FrameAllocator<ORDER>) -> Self {
         Self {
             allocator,
             available: 0,
@@ -50,13 +50,13 @@ impl PhysicalMemoryAllocator {
     }
 }
 
-unsafe impl FrameAllocator<Size4KiB> for PhysicalMemoryAllocator {
+unsafe impl<const ORDER: usize> FrameAllocator<Size4KiB> for PhysicalMemoryAllocator<ORDER> {
     fn allocate_frame(&mut self) -> Option<PhysFrame<Size4KiB>> {
         Some(PhysFrame::containing_address(PhysAddr::new(self.alloc(1).start as u64)))
     }
 }
 
-impl FrameDeallocator<Size4KiB> for PhysicalMemoryAllocator {
+impl<const ORDER: usize> FrameDeallocator<Size4KiB> for PhysicalMemoryAllocator<ORDER> {
     unsafe fn deallocate_frame(&mut self, frame: PhysFrame<Size4KiB>) {
         self.dealloc(MemoryRegion {
             start: frame.start_address().as_u64() as usize,

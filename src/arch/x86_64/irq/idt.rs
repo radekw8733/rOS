@@ -1,17 +1,19 @@
 use spin::RwLock;
-use x86_64::structures::idt::InterruptDescriptorTable;
+use x86_64::{set_general_handler, structures::idt::{InterruptDescriptorTable, InterruptStackFrame}};
 
-use crate::arch::x86_64::timer::pit::PITType;
+pub static IDT: RwLock<InterruptDescriptorTable> = RwLock::new(InterruptDescriptorTable::new());
 
-use super::{exceptions::{division_error_handler, double_fault_handler}, pic::PICInterrupt};
-
-pub static mut IDT: RwLock<InterruptDescriptorTable> = RwLock::new(InterruptDescriptorTable::new());
+pub fn exception_handler(stack: InterruptStackFrame, index: u8, _error_code: Option<u64>) {
+    if index == 8 {
+        panic!("-- DOUBLE FAULT EXCEPTION --\n{:#?}", stack);
+    }
+    log::error!("general exception nr: {}", index);
+}
 
 pub fn load_idt() {
     let mut idt = InterruptDescriptorTable::new();
-    idt[PICInterrupt::PIT.to_idt_entry_index() as u8].set_handler_fn(PITType::interrupt_handler);
-    idt.double_fault.set_handler_fn(double_fault_handler);
-    idt.divide_error.set_handler_fn(division_error_handler);
+    // handle only double faults for now
+    set_general_handler!(&mut idt, exception_handler, 8);
 
     unsafe {
         *IDT.write() = idt;

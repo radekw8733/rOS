@@ -87,6 +87,9 @@ impl log::Log for LogAdapter {
             log::Level::Trace => RGB8::new(100, 100, 100),
         };
 
+        if record.level() == log::Level::Error {
+            unsafe { LOGGER.force_unlock() };
+        }
         LOGGER.lock().write_str(&format!(
             "{}{level} {target}{} {msg}\n", '['.fg(sign_color), "]:".fg(sign_color),
             level = record.level().as_str().fg(level_color),
@@ -118,7 +121,7 @@ impl core::fmt::Write for (dyn Console + Send + 'static) {
 
 #[macro_export]
 macro_rules! print {
-    ($($arg:tt)*) => (crate::kernel::log::_print(format_args!($($arg)*), false));
+    ($($arg:tt)*) => (crate::kernel::log::_print(format_args!($($arg)*)));
 }
 
 #[macro_export]
@@ -127,22 +130,8 @@ macro_rules! println {
     ($($arg:tt)*) => ($crate::print!("{}\n", format_args!($($arg)*)));
 }
 
-#[macro_export]
-macro_rules! eprint {
-    ($($arg:tt)*) => (crate::kernel::log::_print(format_args!($($arg)*), true));
-}
-
-#[macro_export]
-macro_rules! eprintln {
-    () => ($crate::eprint!("\n"));
-    ($($arg:tt)*) => ($crate::eprint!("{}\n", format_args!($($arg)*)));
-}
-
 #[doc(hidden)]
-pub fn _print(args: core::fmt::Arguments, emergency: bool) {
+pub fn _print(args: core::fmt::Arguments) {
     use core::fmt::Write;
-    if emergency {
-        unsafe { LOGGER.force_unlock() };
-    }
     LOGGER.lock().write_fmt(args).unwrap()
 }

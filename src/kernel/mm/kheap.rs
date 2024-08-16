@@ -4,7 +4,7 @@ use buddy_system_allocator::LockedHeap;
 
 use super::phys_allocator::PHYS_ALLOCATOR;
 
-static _KHEAP: LockedHeap<36> = LockedHeap::empty();
+static _KHEAP: LockedHeap<36> = LockedHeap::new();
 
 pub struct KernelHeap;
 
@@ -35,13 +35,13 @@ impl KernelHeap {
     }
 
     // statistics
-    pub fn heap_available() -> usize {
+    pub fn heap_available(&self) -> usize {
         interrupts::without(|| {
             _KHEAP.lock().stats_total_bytes()
         })
     }
 
-    pub fn heap_allocated() -> usize {
+    pub fn heap_allocated(&self) -> usize {
         interrupts::without(|| {
             _KHEAP.lock().stats_alloc_actual()
         })

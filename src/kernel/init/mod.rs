@@ -1,4 +1,4 @@
-use crate::{kernel::irq::enable_interrupts, print, println};
+use crate::{arch::ops, kernel::irq::load_interrupts, print, println};
 
 use super::log::LOGGER;
 
@@ -7,11 +7,13 @@ pub mod limine;
 
 pub fn init() {
     println!("booting rOS...");
+
     setup_memory_manager();
     println!("memory setup complete");
+
     switch_logger();
-    enable_interrupts();
-    log::info!("interrupts enabled");
+    load_interrupts();
+    detect_cpu_speed();
 }
 
 pub fn setup_memory_manager() {
@@ -28,4 +30,9 @@ pub fn switch_logger() {
 
     print!("switching to dynamic logger");
     LOGGER.lock().switch_to_allocated_mode();
+}
+
+pub fn detect_cpu_speed() {
+    #[cfg(target_arch = "x86_64")]
+    ops::detect_cpu_speed();
 }

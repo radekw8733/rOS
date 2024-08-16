@@ -1,14 +1,7 @@
-use self::{idt::load_idt, pic::{PICInterrupt, PIC}};
+use self::idt::load_idt;
 
-pub mod exceptions;
 pub mod idt;
-pub mod pic;
 
-pub fn enable_interrupts() {
+pub fn load_interrupts() {
     load_idt();
-
-    PIC.lock().init();
-    PIC.lock().unmask(PICInterrupt::PIT);
-
-    x86_64::instructions::interrupts::enable();
 }
