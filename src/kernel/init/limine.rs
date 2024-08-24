@@ -3,7 +3,7 @@ use buddy_system_allocator::FrameAllocator;
 use limine::{memory_map::{Entry, EntryType}, request::{FramebufferRequest, MemoryMapRequest}};
 use x86_64::{registers::control::Cr3, structures::paging::{OffsetPageTable, PageTable}, VirtAddr};
 
-use crate::{drivers::{tty::fb::FramebufferConsole, video::{framebuffer::GenericFramebuffer, Size}}, kernel::{log::{Console, LOGGER}, mm::{kheap::KERNEL_HEAP, phys_allocator::{PhysicalMemoryAllocator, PHYS_ALLOCATOR}, MMapEntry, MemoryRegion}}};
+use crate::{drivers::{tty::fb::FramebufferConsole, video::{framebuffer::GenericFramebuffer, Size}}, kernel::{log::{Console, LOGGER}, mm::{kheap::KERNEL_HEAP, phys_allocator::{PhysicalMemoryAllocator, PHYS_ALLOCATOR}, vm_manager::{VirtualMemoryManager, VM_MANAGER}, MMapEntry, MemoryRegion}}};
 
 static FB_REQUEST: FramebufferRequest = FramebufferRequest::new();
 static MEMORYMAP_REQUEST: MemoryMapRequest = MemoryMapRequest::new();
@@ -48,6 +48,8 @@ pub fn setup_memory() {
     
     let pt = unsafe { &mut *(pt_addr.as_u64() as *mut PageTable) };
     let ident_map = unsafe { OffsetPageTable::new(pt, VirtAddr::new(0)) };
+
+    VM_MANAGER.lock().set(VirtualMemoryManager::new(ident_map)).ok();
 
     let mmap = mmap.iter()
         .map(|e| {
